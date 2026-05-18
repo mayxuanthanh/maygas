@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMI Online - Máy Xuân Thành</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .monitor-card { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; padding: 20px; text-align: center; }
+        .status-badge { font-size: 16px; font-weight: 600; padding: 10px 20px; border-radius: 30px; display: inline-block; transition: all 0.3s; }
+        .value-text { font-size: 32px; font-weight: bold; color: #1e293b; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary">⚙️ HỆ THỐNG GIÁM SÁT MÁY XUÂN THÀNH</h2>
+        <div id="txt_trang_thai" class="status-badge bg-secondary text-white mt-2">Đang kết nối Cloud...</div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="monitor-card">
+                <h5 class="text-muted fw-bold">🎈 ÁP SUẤT THẤP</h5>
+                <div id="chart_ap_thap"></div>
+                <div id="val_ap_thap" class="value-text">0.0 Bar</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="monitor-card">
+                <h5 class="text-muted fw-bold">🔥 ÁP SUẤT CAO</h5>
+                <div id="chart_ap_cao"></div>
+                <div id="val_ap_cao" class="value-text">0.0 Bar</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="monitor-card">
+                <h5 class="text-muted fw-bold">⚖️ TRỌNG LƯỢNG GAS NẠP</h5>
+                <div id="chart_trong_luong" style="min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                    <div class="progress w-100" style="height: 45px; border-radius: 25px; background-color: #e2e8f0;">
+                        <div id="bar_trong_luong" class="progress-bar progress-bar-striped progress-bar-animated bg-warning text-dark fw-bold fs-5" role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+                <div id="val_trong_luong" class="value-text mt-2">0 g</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🔑 CHIẾC CHÌA KHÓA LIÊN KẾT THẲNG VÀO FIREBASE CỦA BẠN
+    const firebaseConfig = {
+        apiKey: "AIzaSyCQ9HvV5sRpL-zhXl8WTAO58NM3QVZ0NBg",
+        databaseURL: "https://ac-recover-xuanthanh-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // 📊 CẤU HÌNH ĐỒNG HỒ ĐỒ HỌA TRÒN (GAUGE CHARTS)
+    const optionsGauge = {
+        chart: { height: 220, type: 'radialBar' },
+        plotOptions: {
+            radialBar: {
+                startAngle: -135, endAngle: 135,
+                dataLabels: { name: { show: false }, value: { show: false } }
+            }
+        },
+        colors: ['#3b82f6'], stroke: { lineCap: 'round' }, series: [0]
+    };
+
+    // Tạo đồng hồ Áp thấp (Màu xanh dương, giới hạn max 15 Bar)
+    const chartApThap = new ApexCharts(document.querySelector("#chart_ap_thap"), optionsGauge);
+    chartApThap.render();
+
+    // Tạo đồng hồ Áp cao (Đổi sang màu đỏ báo động, giới hạn max 50 Bar)
+    const optionsApCao = {...optionsGauge, colors: ['#ef4444']};
+    const chartApCao = new ApexCharts(document.querySelector("#chart_ap_cao"), optionsApCao);
+    chartApCao.render();
+
+    // 🚀 LẮNG NGHE DỮ LIỆU TỪ ESP32 GỬI LÊN BẮT SỐ THỜI GIAN THỰC
+    database.ref('/may_test_xuanthanh').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            // 1. Hiển thị số chữ trực quan
+            document.getElementById('val_ap_thap').innerText = data.ap_thap.toFixed(1) + " Bar";
+            document.getElementById('val_ap_cao').innerText = data.ap_cao.toFixed(1) + " Bar";
+            document.getElementById('val_trong_luong').innerText = data.trong_luong_gas + " g";
+            
+            // 2. Hiển thị trạng thái máy lên bảng màu xanh
+            const txtTrangThai = document.getElementById('txt_trang_thai');
+            txtTrangThai.innerText = data.trang_thai;
+            txtTrangThai.style.background = "#22c55e"; 
+
+            // 3. Quay kim đồng hồ Áp thấp (Max tính là 15 Bar)
+            let percentApThap = (data.ap_thap / 15) * 100;
+            if (percentApThap < 0) percentApThap = 0;
+            if (percentApThap > 100) percentApThap = 100;
+            chartApThap.updateSeries([percentApThap]);
+
+            // 4. Quay kim đồng hồ Áp cao (Max tính là 50 Bar)
+            let percentApCao = (data.ap_cao / 50) * 100;
+            if (percentApCao < 0) percentApCao = 0;
+            if (percentApCao > 100) percentApCao = 100;
+            chartApCao.updateSeries([percentApCao]);
+
+            // 5. Chạy thanh tải phần trăm bình Gas (Giả sử bình 12kg = 12000g là đầy)
+            let maxBinhGas = 12000; 
+            let percentGas = (data.trong_luong_gas / maxBinhGas) * 100;
+            if(percentGas < 0) percentGas = 0;
+            if(percentGas > 100) percentGas = 100;
+            
+            const barTrongLuong = document.getElementById('bar_trong_luong');
+            barTrongLuong.style.width = percentGas + '%';
+            barTrongLuong.innerText = percentGas.toFixed(0) + '%';
+        }
+    });
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMI Online - Máy Xuân Thành</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .monitor-card { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; padding: 20px; text-align: center; }
+        .status-badge { font-size: 16px; font-weight: 600; padding: 10px 20px; border-radius: 30px; display: inline-block; transition: all 0.3s; }
+        .value-text { font-size: 32px; font-weight: bold; color: #1e293b; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary">⚙️ HỆ THỐNG GIÁM SÁT MÁY XUÂN THÀNH</h2>
+        <div id="txt_trang_thai" class="status-badge bg-secondary text-white mt-2">Đang kết nối Cloud...</div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="monitor-card">
+                <h5 class="text-muted fw-bold">🎈 ÁP SUẤT THẤP</h5>
+                <div id="chart_ap_thap"></div>
+                <div id="val_ap_thap" class="value-text">0.0 Bar</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="monitor-card">
+                <h5 class="text-muted fw-bold">🔥 ÁP SUẤT CAO</h5>
+                <div id="chart_ap_cao"></div>
+                <div id="val_ap_cao" class="value-text">0.0 Bar</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="monitor-card">
+                <h5 class="text-muted fw-bold">⚖️ TRỌNG LƯỢNG GAS NẠP</h5>
+                <div id="chart_trong_luong" style="min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                    <div class="progress w-100" style="height: 45px; border-radius: 25px; background-color: #e2e8f0;">
+                        <div id="bar_trong_luong" class="progress-bar progress-bar-striped progress-bar-animated bg-warning text-dark fw-bold fs-5" role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+                <div id="val_trong_luong" class="value-text mt-2">0 g</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🔑 CHIẾC CHÌA KHÓA LIÊN KẾT THẲNG VÀO FIREBASE CỦA BẠN
+    const firebaseConfig = {
+        apiKey: "AIzaSyCQ9HvV5sRpL-zhXl8WTAO58NM3QVZ0NBg",
+        databaseURL: "https://ac-recover-xuanthanh-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // 📊 CẤU HÌNH ĐỒNG HỒ ĐỒ HỌA TRÒN (GAUGE CHARTS)
+    const optionsGauge = {
+        chart: { height: 220, type: 'radialBar' },
+        plotOptions: {
+            radialBar: {
+                startAngle: -135, endAngle: 135,
+                dataLabels: { name: { show: false }, value: { show: false } }
+            }
+        },
+        colors: ['#3b82f6'], stroke: { lineCap: 'round' }, series: [0]
+    };
+
+    // Tạo đồng hồ Áp thấp (Màu xanh dương, giới hạn max 15 Bar)
+    const chartApThap = new ApexCharts(document.querySelector("#chart_ap_thap"), optionsGauge);
+    chartApThap.render();
+
+    // Tạo đồng hồ Áp cao (Đổi sang màu đỏ báo động, giới hạn max 50 Bar)
+    const optionsApCao = {...optionsGauge, colors: ['#ef4444']};
+    const chartApCao = new ApexCharts(document.querySelector("#chart_ap_cao"), optionsApCao);
+    chartApCao.render();
+
+    // 🚀 LẮNG NGHE DỮ LIỆU TỪ ESP32 GỬI LÊN BẮT SỐ THỜI GIAN THỰC
+    database.ref('/may_test_xuanthanh').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            // 1. Hiển thị số chữ trực quan
+            document.getElementById('val_ap_thap').innerText = data.ap_thap.toFixed(1) + " Bar";
+            document.getElementById('val_ap_cao').innerText = data.ap_cao.toFixed(1) + " Bar";
+            document.getElementById('val_trong_luong').innerText = data.trong_luong_gas + " g";
+            
+            // 2. Hiển thị trạng thái máy lên bảng màu xanh
+            const txtTrangThai = document.getElementById('txt_trang_thai');
+            txtTrangThai.innerText = data.trang_thai;
+            txtTrangThai.style.background = "#22c55e"; 
+
+            // 3. Quay kim đồng hồ Áp thấp (Max tính là 15 Bar)
+            let percentApThap = (data.ap_thap / 15) * 100;
+            if (percentApThap < 0) percentApThap = 0;
+            if (percentApThap > 100) percentApThap = 100;
+            chartApThap.updateSeries([percentApThap]);
+
+            // 4. Quay kim đồng hồ Áp cao (Max tính là 50 Bar)
+            let percentApCao = (data.ap_cao / 50) * 100;
+            if (percentApCao < 0) percentApCao = 0;
+            if (percentApCao > 100) percentApCao = 100;
+            chartApCao.updateSeries([percentApCao]);
+
+            // 5. Chạy thanh tải phần trăm bình Gas (Giả sử bình 12kg = 12000g là đầy)
+            let maxBinhGas = 12000; 
+            let percentGas = (data.trong_luong_gas / maxBinhGas) * 100;
+            if(percentGas < 0) percentGas = 0;
+            if(percentGas > 100) percentGas = 100;
+            
+            const barTrongLuong = document.getElementById('bar_trong_luong');
+            barTrongLuong.style.width = percentGas + '%';
+            barTrongLuong.innerText = percentGas.toFixed(0) + '%';
+        }
+    });
+</script>
+</body>
+</html>
