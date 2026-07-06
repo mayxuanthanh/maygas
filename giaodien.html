@@ -85,8 +85,9 @@
   
   <script>
     // Link API kết nối thẳng vào database Firebase Asia của anh Thành
-    const FIREBASE_BASE_URL = "https://ac-recover-xuanthanh-default-rtdb.asia-southeast1.firebasedatabase.app";
-
+   // const FIREBASE_BASE_URL = "https://ac-recover-xuanthanh-default-rtdb.asia-southeast1.firebasedatabase.app";
+// Link API kết nối thẳng vào database Firebase mới của anh Thành
+const FIREBASE_BASE_URL = "https://ac-recover-xuanthanh-20b44-default-rtdb.asia-southeast1.firebasedatabase.app";
     // Hàm gửi lệnh Patch lên Firebase để ESP32 kéo về thực thi phần cứng tại xưởng
     function sendFirebaseCommand(actionName, numericValue) {
       let url = FIREBASE_BASE_URL + "/control.json";
