@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HMI Online Hai Chiều - Máy Xuân Thành</title>
+  <title>HMI Cloud Điều Khiển Từ Xa - AC RECOVER XUÂN THÀNH</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f4f8; text-align: center; padding: 15px; margin: 0; color: #333; }
     .main-title { color: #0056b3; font-size: 24px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .sub-title { color: #0066cc; font-size: 24px; font-weight: bold; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; }
-    .status-badge { background-color: #dc3545; color: white; padding: 12px 30px; border-radius: 30px; font-size: 18px; font-weight: bold; display: inline-block; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-transform: uppercase; border: none; transition: background-color 0.3s ease; }
+    .status-badge { background-color: #dc3545; color: white; padding: 12px 30px; border-radius: 30px; font-size: 18px; font-weight: bold; display: inline-block; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-transform: uppercase; border: none; }
     .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 440px; margin: 0 auto 20px auto; box-sizing: border-box; text-align: center; }
     .card-title { font-size: 18px; font-weight: bold; color: #555; margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
-    .stop-btn { background-color: #dc3545; color: white; border: none; padding: 18px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 6px #b21f2d; transition: all 0.1s ease; box-sizing: border-box; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .stop-btn { background-color: #dc3545; color: white; border: none; padding: 18px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 6px #b21f2d; transition: all 0.1s ease; box-sizing: border-box; text-transform: uppercase; }
     .stop-btn:active { transform: translateY(4px); box-shadow: 0 2px #b21f2d; }
     .btn-subtext { font-size: 13px; color: #777; margin-top: 12px; margin-bottom: 0; line-height: 1.4; }
     .gauge-container { display: flex; justify-content: space-around; gap: 15px; margin-bottom: 15px; }
@@ -21,24 +21,23 @@
     .gauge-fill { fill: none; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 314; transition: stroke-dashoffset 0.3s ease; }
     .gauge-value { font-size: 24px; font-weight: bold; margin-top: -70px; margin-bottom: 40px; }
     .weight-display { font-size: 40px; font-weight: bold; color: #17a2b8; margin: 10px 0; }
-    .progress-text { font-size: 30px; font-weight: bold; color: #fd7e14; margin: 10px 0; }
     .unit { font-size: 14px; color: #888; font-weight: normal; }
     .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
     .action-btn { padding: 12px; font-weight: bold; font-size: 14px; border-radius: 8px; border: none; cursor: pointer; color: white; text-transform: uppercase; }
     .input-field { padding: 12px; font-size: 16px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; text-align: center; }
-    .config-box { background: #e9ecef; border-radius: 12px; padding: 12px; max-width: 440px; margin: 20px auto; font-size: 14px; }
-    .ip-input { padding: 6px 10px; font-size: 14px; width: 160px; border-radius: 4px; border: 1px solid #ccc; text-align: center; font-weight: bold; color: #0056b3; }
   </style>
 </head>
 <body>
-  <div class="main-title">⚙️ HỆ THỐNG ĐIỀU KHIỂN</div>
+  <div class="main-title">⚙️ HỆ THỐNG ĐIỀU KHIỂN CLOUD</div>
   <div class="sub-title">& GIÁM SÁT XUÂN THÀNH</div>
-  <div class="status-badge" id="trang_thai">ĐANG KẾT NỐI...</div>
+  <div class="status-badge" id="trang_thai">ĐANG KẾT NỐI CLOUD...</div>
+
   <div class="card">
-    <div class="card-title">🎮 BÀN ĐIỀU KHIỂN TRỰC TUYẾN</div>
-    <button class="stop-btn" onclick="stopMachine()">🛑 DỪNG MÁY KHẨN CẤP TỪ XA</button>
-    <p class="btn-subtext">Bấm nút để ra lệnh ngắt toàn bộ Relay tại xưởng ngay lập tức</p>
+    <div class="card-title">🎮 BÀN ĐIỀU KHIỂN TRÊN 4G/WIFI</div>
+    <button class="stop-btn" id="btnStop">🛑 DỪNG MÁY KHẨN CẤP TỪ XA</button>
+    <p class="btn-subtext">Hệ thống truyền lệnh qua vệ tinh Google Firebase bảo mật cao</p>
   </div>
+
   <div class="gauge-container" style="max-width:440px; margin:0 auto 20px auto;">
     <div class="gauge-box">
       <div class="card-title">🎈 ÁP SUẤT THẤP</div>
@@ -51,33 +50,71 @@
       <div class="gauge-value" id="val_h" style="color:#dc3545">0.0</div><div class="unit">PSI</div>
     </div>
   </div>
+
   <div class="card"><div class="card-title">⚖️ TRỌNG LƯỢNG BÌNH CHỨA</div><div class="weight-display" id="trong_luong_binh">0</div><div class="unit">Gram</div></div>
-  <div class="card"><div class="card-title">📊 TIẾN ĐỘ NẠP THỰC TẾ</div><div class="progress-text"><span id="da_nap">0</span> <span style="color:#ccc; font-size:24px;">/</span> <span id="cai_dat">0</span></div><div class="unit">Gram</div></div>
+
   <div class="card">
-    <div class="card-title">🛠️ LỆNH VẬN HÀNH XƯỞNG</div>
-    <div class="ctrl-grid"><button onclick="startThuHoi()" class="action-btn" style="background:#ffc107; color:black;">🔄 THU HỒI</button><button onclick="startHutChanKhong()" class="action-btn" style="background:#17a2b8;">💨 CHÂN KHÔNG</button></div>
-    <div style="display: flex; gap: 10px;"><input type="number" id="inputGas" class="input-field" placeholder="Nhập số..."><button onclick="startNapGas()" class="action-btn" style="background:#28a745; min-width:120px;">▶ NẠP GAS</button></div>
+    <div class="card-title">🛠️ LỆNH VẬN HÀNH XƯỞNG TỪ XA</div>
+    <div class="ctrl-grid">
+      <button id="btnThuHoi" class="action-btn" style="background:#ffc107; color:black;">🔄 THU HỒI</button>
+      <button id="btnChanKhong" class="action-btn" style="background:#17a2b8;">💨 CHÂN KHÔNG</button>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <input type="number" id="inputGas" class="input-field" placeholder="Nhập số...">
+      <button id="btnNapGas" class="action-btn" style="background:#28a745; min-width:120px;">▶ NẠP GAS</button>
+    </div>
   </div>
-  <div class="config-box">⚙️ <b>Cấu hình kết nối máy:</b> Nhập IP hiện trên màn hình: <input type="text" id="ip_may" class="ip-input" placeholder="192.168.1.XX" onchange="saveIP()"></div>
-  <script>
-    document.getElementById('ip_may').value = localStorage.getItem('esp32_ip') || '';
-    function getBaseUrl() { let ip = document.getElementById('ip_may').value.trim(); if(!ip) return ''; if(!ip.startsWith('http')) ip = 'http://' + ip; return ip; }
-    function saveIP() { let ip = document.getElementById('ip_may').value.trim(); localStorage.setItem('esp32_ip', ip); alert('Đã lưu IP máy: ' + ip + '. Đang kết nối...'); }
-    function stopMachine() { let url = getBaseUrl(); if(!url) { alert('Chưa nhập IP!'); return; } if(confirm("DỪNG MÁY KHẨN CẤP?")) fetch(url + '/stop').then(res => alert("ĐÃ DỪNG!")); }
-    function startThuHoi() { let url = getBaseUrl(); if(!url) { alert('Chưa nhập IP!'); return; } if(confirm("CHẠY THU HỒI GAS?")) fetch(url + '/dieukhien?action=thuhoi').then(res => alert("Đã phát lệnh!")); }
-    function startHutChanKhong() { let url = getBaseUrl(); if(!url) { alert('Chưa nhập IP!'); return; } let m = document.getElementById('inputGas').value || 10; if(confirm("HÚT CHÂN KHÔNG " + m + " PHÚT?")) fetch(url + '/dieukhien?action=hutchankhong&value=' + m).then(res => alert("Đã phát lệnh!")); }
-    function startNapGas() { let url = getBaseUrl(); if(!url) { alert('Chưa nhập IP!'); return; } let g = document.getElementById('inputGas').value; if(g > 0) { if(confirm("NẠP " + g + " GRAM?")) fetch(url + '/dieukhien?action=napgas&value=' + g).then(res => alert("Đã phát lệnh!")); } else alert("Chưa nhập Gram!"); }
-    setInterval(function() {
-      let url = getBaseUrl(); if(!url) { let s = document.getElementById('trang_thai'); s.innerText = "CHƯA NHẬP IP"; s.style.backgroundColor = "#ffc107"; s.style.color="black"; return; }
-      fetch(url + '/data').then(r => r.json()).then(d => {
-          document.getElementById('val_l').innerText = d.ap_thap.toFixed(1); document.getElementById('val_h').innerText = d.ap_cao.toFixed(1);
-          document.getElementById('trong_luong_binh').innerText = d.trong_luong_binh.toFixed(0); document.getElementById('da_nap').innerText = d.da_nap.toFixed(0); document.getElementById('cai_dat').innerText = d.cai_dat.toFixed(0);
-          let s = document.getElementById('trang_thai'); s.style.color = "white";
-          if(d.trang_thai === "READY") { s.innerText = "KẾT NỐI HỆ THỐNG OK"; s.style.backgroundColor = "#008744"; } else { s.innerText = d.trang_thai; s.style.backgroundColor = "#fd7e14"; }
-          let ol = 314 - (((d.ap_thap + 30) / 230) * 314); document.getElementById('gauge_l').style.strokeDashoffset = ol < 0 ? 0 : (ol > 314 ? 314 : ol);
-          let oh = 314 - ((d.ap_cao / 500) * 314); document.getElementById('gauge_h').style.strokeDashoffset = oh < 0 ? 0 : (oh > 314 ? 314 : oh);
-      }).catch(e => { let s = document.getElementById('trang_thai'); s.innerText = "MẤT KẾT NỐI"; s.style.backgroundColor = "#dc3545"; s.style.color="white"; });
-    }, 1000);
+
+  <!-- TÍCH HỢP HỆ THỐNG MẠNG CLOUD FIREBASE GỐC CỦA MÁY XUÂN THÀNH -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://ac-recover-xuanthanh-default-rtdb.asia-southeast1.firebasedatabase.app" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 1. ĐỌC DỮ LIỆU TỪ MÁY LÊN MÀN HÌNH ĐIỆN THOẠI
+    const rootRef = ref(db, '/may_test_xuanthanh');
+    onValue(rootRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Code của anh đổi sang Bar khi up mây, ở đây nhân lại 14.5038 để hiển thị đúng PSI gốc trên máy
+        let psiL = (data.ap_thap || 0) * 14.5038;
+        let psiH = (data.ap_cao || 0) * 14.5038;
+        
+        document.getElementById('val_l').innerText = psiL.toFixed(1);
+        document.getElementById('val_h').innerText = psiH.toFixed(1);
+        document.getElementById('trong_luong_binh').innerText = data.trong_luong_gas || 0;
+        
+        const statusBadge = document.getElementById('trang_thai');
+        statusBadge.innerText = data.trang_thai || "MÁY ĐANG HOẠT ĐỘNG";
+        if(data.trang_thai && data.trang_thai.includes("HOÂN THÀNH")) {
+          statusBadge.style.backgroundColor = "#008744";
+        } else if(data.trang_thai && data.trang_thai.includes("CHỜ")) {
+          statusBadge.style.backgroundColor = "#6c757d";
+        } else {
+          statusBadge.style.backgroundColor = "#fd7e14";
+        }
+
+        let ol = 314 - (((psiL + 30) / 230) * 314); document.getElementById('gauge_l').style.strokeDashoffset = ol < 0 ? 0 : (ol > 314 ? 314 : ol);
+        let oh = 314 - ((psiH / 500) * 314); document.getElementById('gauge_h').style.strokeDashoffset = oh < 0 ? 0 : (oh > 314 ? 314 : oh);
+      }
+    });
+
+    // 2. BẮN LỆNH ĐIỀU KHIỂN TỪ ĐIỆN THOẠI VỀ XƯỞNG
+    const cmdRef = ref(db, '/may_test_xuanthanh/lenh_web');
+    document.getElementById('btnStop').onclick = () => { if(confirm("DỪNG MÁY KHẨN CẤP?")) set(cmdRef, "STOP"); };
+    document.getElementById('btnThuHoi').onclick = () => { if(confirm("KÍCH HOẠT THU HỒI GAS?")) set(cmdRef, "THUHOI"); };
+    document.getElementById('btnChanKhong').onclick = () => { 
+      let m = document.getElementById('inputGas').value || 15;
+      if(confirm("HÚT CHÂN KHÔNG " + m + " PHÚT?")) set(cmdRef, "HUTCHANKHONG:" + m);
+    };
+    document.getElementById('btnNapGas').onclick = () => {
+      let g = document.getElementById('inputGas').value;
+      if(g > 0) { if(confirm("PHÁT LỆNH NẠP " + g + " GRAM?")) set(cmdRef, "NAPGAS:" + g); }
+      else alert("Vui lòng nhập số Gram cần nạp!");
+    };
   </script>
 </body>
 </html>
