@@ -1,146 +1,159 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HMI Cloud Điều Khiển Từ Xa - AC RECOVER XUÂN THÀNH</title>
-<style>
-  body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f4f8; text-align: center; padding: 15px; margin: 0; color: #333; }
-  .main-title { color: #0056b3; font-size: 24px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .sub-title { color: #0066cc; font-size: 24px; font-weight: bold; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; }
-  .status-badge { background-color: #008744; color: white; padding: 12px 30px; border-radius: 30px; font-size: 18px; font-weight: bold; display: inline-block; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,135,68,0.2); text-transform: uppercase; border: none; }
-  .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 440px; margin: 0 auto 20px auto; box-sizing: border-box; text-align: center; }
-  .card-title { font-size: 18px; font-weight: bold; color: #555; margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
-  .stop-btn { background-color: #dc3545; color: white; border: none; padding: 18px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 6px #b21f2d; transition: all 0.1s ease; box-sizing: border-box; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .stop-btn:active { transform: translateY(4px); box-shadow: 0 2px #b21f2d; }
-  .btn-subtext { font-size: 13px; color: #777; margin-top: 12px; margin-bottom: 0; line-height: 1.4; }
-  
-  .gauge-container { display: flex; justify-content: space-around; gap: 15px; margin-bottom: 15px; }
-  .gauge-box { width: 48%; background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
-  .gauge-svg { width: 120px; height: 120px; transform: rotate(-90deg); }
-  .gauge-bg { fill: none; stroke: #e1e8ed; stroke-width: 12; stroke-linecap: round; }
-  .gauge-fill { fill: none; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 314; transition: stroke-dashoffset 0.3s ease; }
-  .gauge-value { font-size: 24px; font-weight: bold; margin-top: -70px; margin-bottom: 40px; }
-  
-  .weight-display { font-size: 40px; font-weight: bold; color: #17a2b8; margin: 10px 0; }
-  .progress-text { font-size: 30px; font-weight: bold; color: #fd7e14; margin: 10px 0; }
-  .unit { font-size: 14px; color: #888; font-weight: normal; }
-  
-  .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-  .action-btn { padding: 12px; font-weight: bold; font-size: 14px; border-radius: 8px; border: none; cursor: pointer; color: white; text-transform: uppercase; }
-  .input-field { padding: 12px; font-size: 16px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; text-align: center; }
-</style></head><body>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMI 4G Cloud - Máy Xuân Thành</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <div class="main-title">⚙️ HỆ THỐNG ĐIỀU KHIỂN CLOUD</div>
-  <div class="sub-title">& GIÁM SÁT XUÂN THÀNH (4G)</div>
-  
-  <div class="status-badge" id="trang_thai">ĐANG KẾT NỐI CLOUD...</div>
+    <style>
+        body { background-color: #f0f4f8; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 15px; margin: 0; color: #333; }
+        .main-title { color: #0056b3; font-size: 22px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; text-transform: uppercase; }
+        .sub-title { color: #0066cc; font-size: 22px; font-weight: bold; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; }
+        .status-badge { background-color: #008744; color: white; padding: 12px 30px; border-radius: 30px; font-size: 18px; font-weight: bold; display: inline-block; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,135,68,0.2); text-transform: uppercase; }
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 440px; margin: 0 auto 20px auto; box-sizing: border-box; }
+        .card-title { font-size: 16px; font-weight: bold; color: #555; margin-top: 0; margin-bottom: 15px; text-transform: uppercase; }
+        .stop-btn { background-color: #dc3545; color: white; border: none; padding: 18px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 6px #b21f2d; transition: all 0.1s ease; text-transform: uppercase; }
+        .stop-btn:active { transform: translateY(4px); box-shadow: 0 2px #b21f2d; }
+        .btn-subtext { font-size: 12px; color: #777; margin-top: 10px; margin-bottom: 0; }
+        
+        .gauge-container { display: flex; justify-content: space-around; gap: 15px; margin-bottom: 20px; }
+        .gauge-box { width: 48%; background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .gauge-svg { width: 120px; height: 120px; transform: rotate(-90deg); }
+        .gauge-bg { fill: none; stroke: #e1e8ed; stroke-width: 12; stroke-linecap: round; }
+        .gauge-fill { fill: none; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 314; transition: stroke-dashoffset 0.4s ease; }
+        .gauge-value { font-size: 26px; font-weight: bold; margin-top: -70px; margin-bottom: 40px; }
+        
+        .weight-display { font-size: 38px; font-weight: bold; color: #17a2b8; margin: 5px 0; }
+        .progress-text { font-size: 32px; font-weight: bold; color: #fd7e14; margin: 5px 0; }
+        .unit { font-size: 13px; color: #888; }
+        
+        .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .action-btn { padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; border: none; cursor: pointer; color: white; text-transform: uppercase; }
+        .input-field { padding: 12px; font-size: 18px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; text-align: center; }
+    </style>
+</head>
+<body>
 
-  <div class="card">
-    <div class="card-title">🎮 BÀN ĐIỀU KHIỂN TỪ XA QUA 4G</div>
-    <button class="stop-btn" onclick="stopMachine()">🛑 DỪNG MÁY KHẨN CẤP</button>
-    <p class="btn-subtext">Lệnh truyền qua đám mây Google ngắt toàn bộ Relay tại xưởng lập tức</p>
-  </div>
+    <div class="main-title">⚙️ HỆ THỐNG ĐIỀU KHIỂN</div>
+    <div class="sub-title">& GIÁM SÁT XUÂN THÀNH V3</div>
+    
+    <div class="status-badge" id="trang_thai">ĐANG ĐỒNG BỘ CLOUD...</div>
 
-  <div class="gauge-container" style="max-width:440px; margin:0 auto 20px auto;">
-    <div class="gauge-box">
-      <div class="card-title">🎈 ÁP SUẤT THẤP</div>
-      <svg class="gauge-svg">
-        <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
-        <circle class="gauge-fill" id="gauge_l" cx="60" cy="60" r="50" stroke="#28a745"></circle>
-      </svg>
-      <div class="gauge-value" id="val_l" style="color:#28a745">0.0</div>
-      <div class="unit">PSI</div>
+    <div class="card">
+        <div class="card-title">🎮 BÀN ĐIỀU KHIỂN TRỰC TUYẾN 4G</div>
+        <button class="stop-btn" onclick="sendCloudCommand('stop', 0)">🛑 DỪNG MÁY KHẨN CẤP TỪ XA</button>
+        <p class="btn-subtext">Bấm nút để ra lệnh ngắt toàn bộ Relay tại xưởng qua mạng di động</p>
     </div>
-    <div class="gauge-box">
-      <div class="card-title">🔥 ÁP SUẤT CAO</div>
-      <svg class="gauge-svg">
-        <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
-        <circle class="gauge-fill" id="gauge_h" cx="60" cy="60" r="50" stroke="#dc3545"></circle>
-      </svg>
-      <div class="gauge-value" id="val_h" style="color:#dc3545">0.0</div>
-      <div class="unit">PSI</div>
-    </div>
-  </div>
 
-  <div class="card">
-    <div class="card-title">⚖️ TRỌNG LƯỢNG BÌNH CHỨA</div>
-    <div class="weight-display" id="trong_luong_binh">0</div>
-    <div class="unit">Gram</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">📊 TIẾN ĐỘ NẠP THỰC TẾ</div>
-    <div class="progress-text"><span id="da_nap">0</span> <span style="color:#ccc; font-size:24px;">/</span> <span id="cai_dat">0</span></div>
-    <div class="unit">Gram</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🛠️ LỆNH VẬN HÀNH XƯỞNG QUA 4G</div>
-    <div class="ctrl-grid">
-      <button onclick="startThuHoi()" class="action-btn" style="background:#ffc107; color:black;">🔄 THU HỒI</button>
-      <button onclick="startHutChanKhong()" class="action-btn" style="background:#17a2b8;">💨 CHÂN KHÔNG</button>
+    <div class="gauge-container" style="max-width:440px; margin:0 auto 20px auto;">
+        <div class="gauge-box">
+            <div class="card-title">🎈 ÁP SUẤT THẤP</div>
+            <svg class="gauge-svg">
+                <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                <circle class="gauge-fill" id="gauge_l" cx="60" cy="60" r="50" stroke="#28a745"></circle>
+            </svg>
+            <div class="gauge-value" id="val_l" style="color:#28a745">0.0</div>
+            <div class="unit">Bar</div>
+        </div>
+        <div class="gauge-box">
+            <div class="card-title">🔥 ÁP SUẤT CAO</div>
+            <svg class="gauge-svg">
+                <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                <circle class="gauge-fill" id="gauge_h" cx="60" cy="60" r="50" stroke="#dc3545"></circle>
+            </svg>
+            <div class="gauge-value" id="val_h" style="color:#dc3545">0.0</div>
+            <div class="unit">Bar</div>
+        </div>
     </div>
-    <div style="display: flex; gap: 10px;">
-      <input type="number" id="inputGas" class="input-field" placeholder="Nhập số...">
-      <button onclick="startNapGas()" class="action-btn" style="background:#28a745; min-width:120px;">▶ NẠP GAS</button>
+
+    <div class="card">
+        <div class="card-title">⚖️ TRỌNG LƯỢNG BÌNH CHỨA KHO</div>
+        <div class="weight-display" id="trong_luong_binh">0</div>
+        <div class="unit">Gram</div>
     </div>
-  </div>
-  
-  <script>
-    // Link API kết nối thẳng vào database Firebase Asia của anh Thành
-   // const FIREBASE_BASE_URL = "https://ac-recover-xuanthanh-default-rtdb.asia-southeast1.firebasedatabase.app";
-// Link API kết nối thẳng vào database Firebase mới của anh Thành
-const FIREBASE_BASE_URL = "https://ac-recover-xuanthanh-20b44-default-rtdb.asia-southeast1.firebasedatabase.app";
-    // Hàm gửi lệnh Patch lên Firebase để ESP32 kéo về thực thi phần cứng tại xưởng
-    function sendFirebaseCommand(actionName, numericValue) {
-      let url = FIREBASE_BASE_URL + "/control.json";
-      let payload = { action: actionName, value: parseInt(numericValue) };
-      
-      fetch(url, {
-        method: 'PATCH',
-        body: JSON.stringify(payload)
-      })
-      .then(res => alert("Đã phát lệnh Cloud thành công!"))
-      .catch(err => alert("Lỗi gửi lệnh lên Cloud: " + err));
+
+    <div class="card">
+        <div class="card-title">📊 TIẾN ĐỘ NẠP XE THỰC TẾ</div>
+        <div class="progress-text"><span id="da_nap">0</span> <span style="color:#ccc; font-size:24px;">/</span> <span id="cai_dat">0</span></div>
+        <div class="unit">Gram</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🛠️ RA LỆNH VẬN HÀNH XƯỞNG</div>
+        <div class="ctrl-grid">
+            <button onclick="confirmCommand('thuhoi', 'Xác nhận: CHẠY TIẾN TRÌNH THU HỒI GAS?')" class="action-btn" style="background:#ffc107; color:black;">🔄 THU HỒI</button>
+            <button onclick="confirmVacuum()" class="action-btn" style="background:#17a2b8;">💨 CHÂN KHÔNG</button>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="inputGas" class="input-field" placeholder="Nhập số Gram/Phút...">
+            <button onclick="confirmNapGas()" class="action-btn" style="background:#28a745; min-width:130px;">▶ NẠP GAS</button>
+        </div>
+    </div>
+
+<script>
+    // 🔑 Kết nối tài khoản Cloud Firebase mới của anh Thành
+    const firebaseConfig = {
+        apiKey: "AIzaSyA0eOTv_Ydd9KvitnkBEK_EFQDJ-wr0nww",
+        databaseURL: "https://ac-recover-xuanthanh-20b44-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Hàm gửi gói lệnh lên mây điều khiển 4G
+    function sendCloudCommand(actionName, valueInt) {
+        database.ref('/control').set({
+            action: actionName,
+            value: parseInt(valueInt)
+        }).then(() => {
+            if(actionName !== 'stop') alert("Đã bắn lệnh thành công lên vệ tinh 4G!");
+        });
     }
 
-    function stopMachine() { if(confirm("BẠN CÓ CHẮC CHẮN MUỐN DỪNG TỪ XA QUA 4G?")) sendFirebaseCommand("stop", 0); }
-    function startThuHoi() { if(confirm("Xác nhận đám mây: TIẾN TRÌNH THU HỒI GAS?")) sendFirebaseCommand("thuhoi", 0); }
-    function startHutChanKhong() { 
-      let m = document.getElementById('inputGas').value; if(!m || m <= 0) m = 15;
-      if(confirm("Xác nhận đám mây: BẬT BƠM HÚT CHÂN KHÔNG " + m + " PHÚT?")) sendFirebaseCommand("hutchankhong", m);
+    function confirmCommand(act, msg) { if(confirm(msg)) sendCloudCommand(act, 0); }
+    
+    function confirmVacuum() {
+        let m = document.getElementById('inputGas').value; if(!m || m <= 0) m = 15;
+        if(confirm("Xác nhận: BẬT BƠM HÚT CHÂN KHÔNG " + m + " PHÚT?")) sendCloudCommand('hutchankhong', m);
     }
-    function startNapGas() { 
-      let g = document.getElementById('inputGas').value; 
-      if(g > 0) { if(confirm("Xác nhận đám mây: LỆNH NẠP " + g + " GRAM VÀO XE?")) sendFirebaseCommand("napgas", g); }
-      else alert("Vui lòng nhập khối lượng Gram trước!");
+    
+    function confirmNapGas() {
+        let g = document.getElementById('inputGas').value;
+        if(g > 0) { if(confirm("Xác nhận: LỆNH NẠP " + g + " GRAM VÀO XE?")) sendCloudCommand('napgas', g); }
+        else alert("Vui lòng gõ số Gram cần nạp trước!");
     }
 
-    // Vòng lặp tự động lấy dữ liệu từ nhánh /monitor trên Firebase về màn hình điện thoại (1 giây/lần)
-    setInterval(function() {
-      fetch(FIREBASE_BASE_URL + "/monitor.json")
-      .then(response => response.json())
-      .then(data => {
-          if(!data) return;
-          document.getElementById('val_l').innerText = data.ap_thap.toFixed(1);
-          document.getElementById('val_h').innerText = data.ap_cao.toFixed(1);
-          document.getElementById('trong_luong_binh').innerText = data.trong_luong_binh.toFixed(0);
-          document.getElementById('da_nap').innerText = data.da_nap.toFixed(0);
-          document.getElementById('cai_dat').innerText = data.cai_dat.toFixed(0);
-          
-          let sttBox = document.getElementById('trang_thai');
-          sttBox.innerText = "CLOUD OK: " + data.trang_thai;
-          if(data.trang_thai === "READY") { sttBox.style.backgroundColor = "#008744"; } else { sttBox.style.backgroundColor = "#fd7e14"; }
+    // 🚀 LẮNG NGHE DỮ LIỆU ĐẨY VỀ TỪ XƯỞNG QUA MẠNG 4G
+    database.ref('/monitor').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            document.getElementById('val_l').innerText = Number(data.ap_thap).toFixed(1);
+            document.getElementById('val_h').innerText = Number(data.ap_cao).toFixed(1);
+            document.getElementById('trong_luong_binh').innerText = Math.round(data.trong_luong_binh);
+            document.getElementById('da_nap').innerText = Math.round(data.da_nap);
+            document.getElementById('cai_dat').innerText = Math.round(data.cai_dat);
+            
+            let sttBox = document.getElementById('trang_thai');
+            sttBox.innerText = data.trang_thai;
+            if(data.trang_thai === "READY") {
+                sttBox.style.backgroundColor = "#008744";
+            } else {
+                sttBox.style.backgroundColor = "#fd7e14";
+            }
 
-          // Tính toán góc đồ thị
-          let offset_l = 314 - (((data.ap_thap + 30) / 230) * 314);
-          if(offset_l < 0) offset_l = 0; if(offset_l > 314) offset_l = 314;
-          document.getElementById('gauge_l').style.strokeDashoffset = offset_l;
+            // Đồng bộ góc quay kim đồng hồ áp thấp (Căn tỷ lệ tối đa 15 Bar)
+            let offset_l = 314 - ((Number(data.ap_thap) / 15) * 314);
+            if(offset_l < 0) offset_l = 0; if(offset_l > 314) offset_l = 314;
+            document.getElementById('gauge_l').style.strokeDashoffset = offset_l;
 
-          let offset_h = 314 - ((data.ap_cao / 500) * 314);
-          if(offset_h < 0) offset_h = 0; if(offset_h > 314) offset_h = 314;
-          document.getElementById('gauge_h').style.strokeDashoffset = offset_h;
-      }).catch(err => {
-          document.getElementById('trang_thai').innerText = "MẤT KẾT NỐI CLOUD";
-          document.getElementById('trang_thai').style.backgroundColor = "#dc3545";
-      });
-    }, 1000);
-  </script>
-</body></html>
+            // Đồng bộ góc quay kim đồng hồ áp cao (Căn tỷ lệ tối đa 50 Bar)
+            let offset_h = 314 - ((Number(data.ap_cao) / 50) * 314);
+            if(offset_h < 0) offset_h = 0; if(offset_h > 314) offset_h = 314;
+            document.getElementById('gauge_h').style.strokeDashoffset = offset_h;
+        }
+    });
+</script>
+</body>
+</html>
