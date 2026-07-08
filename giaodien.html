@@ -2,37 +2,45 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HMI 4G Cloud - Máy Xuân Thành</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <style>
-        body { background-color: #f0f4f8; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 15px; margin: 0; color: #333; }
+        body { background-color: #f0f4f8; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 10px; margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
         .main-title { color: #0056b3; font-size: 22px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; text-transform: uppercase; }
         .sub-title { color: #0066cc; font-size: 22px; font-weight: bold; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; }
         .status-badge { background-color: #008744; color: white; padding: 12px 30px; border-radius: 30px; font-size: 18px; font-weight: bold; display: inline-block; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,135,68,0.2); text-transform: uppercase; }
-        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 440px; margin: 0 auto 20px auto; box-sizing: border-box; }
-        .card-title { font-size: 16px; font-weight: bold; color: #555; margin-top: 0; margin-bottom: 15px; text-transform: uppercase; }
-        .stop-btn { background-color: #dc3545; color: white; border: none; padding: 18px; width: 100%; font-size: 20px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 6px #b21f2d; transition: all 0.1s ease; text-transform: uppercase; }
+        .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 440px; margin: 0 auto 15px auto; box-sizing: border-box; }
+        .card-title { font-size: 15px; font-weight: bold; color: #555; margin-top: 0; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .stop-btn { background-color: #dc3545; color: white; border: none; padding: 18px; width: 100%; font-size: 19px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 6px #b21f2d; transition: all 0.1s ease; text-transform: uppercase; }
         .stop-btn:active { transform: translateY(4px); box-shadow: 0 2px #b21f2d; }
         .btn-subtext { font-size: 12px; color: #777; margin-top: 10px; margin-bottom: 0; }
         
-        .gauge-container { display: flex; justify-content: space-around; gap: 15px; margin-bottom: 20px; }
-        .gauge-box { width: 48%; background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
-        .gauge-svg { width: 120px; height: 120px; transform: rotate(-90deg); }
+        .gauge-container { display: flex; justify-content: space-around; gap: 10px; margin-bottom: 15px; }
+        .gauge-box { width: 49%; background: white; border-radius: 16px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .gauge-svg { width: 110px; height: 110px; transform: rotate(-90deg); }
         .gauge-bg { fill: none; stroke: #e1e8ed; stroke-width: 12; stroke-linecap: round; }
         .gauge-fill { fill: none; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 314; transition: stroke-dashoffset 0.4s ease; }
-        .gauge-value { font-size: 26px; font-weight: bold; margin-top: -70px; margin-bottom: 40px; }
+        .gauge-value { font-size: 24px; font-weight: bold; margin-top: -65px; margin-bottom: 35px; }
         
-        .weight-display { font-size: 38px; font-weight: bold; color: #17a2b8; margin: 5px 0; }
-        .progress-text { font-size: 32px; font-weight: bold; color: #fd7e14; margin: 5px 0; }
+        .weight-display { font-size: 36px; font-weight: bold; color: #17a2b8; margin: 5px 0; }
+        .progress-text { font-size: 30px; font-weight: bold; color: #fd7e14; margin: 5px 0; }
         .unit { font-size: 13px; color: #888; }
         
         .ctrl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-        .action-btn { padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; border: none; cursor: pointer; color: white; text-transform: uppercase; }
-        .input-field { padding: 12px; font-size: 18px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; text-align: center; }
+        .action-btn { padding: 14px; font-weight: bold; font-size: 14px; border-radius: 8px; border: none; cursor: pointer; color: white; text-transform: uppercase; }
+        .input-field { padding: 12px; font-size: 16px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; text-align: center; }
+        
+        /* Danh sách xe & Tìm kiếm */
+        .search-box { padding: 10px; font-size: 15px; border-radius: 8px; border: 1px solid #ddd; width: 100%; margin-bottom: 12px; text-align: center; }
+        .car-list-container { max-height: 250px; overflow-y: auto; text-align: left; border: 1px solid #eee; border-radius: 8px; padding: 5px; }
+        .car-item { padding: 10px; border-bottom: 1px solid #f5f5f5; cursor: pointer; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .car-item:hover { background-color: #e7f1ff; }
+        .car-item b { color: #0056b3; }
+        .gas-badge { background: #e2f0d9; color: #385723; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -48,7 +56,7 @@
         <p class="btn-subtext">Bấm nút để ra lệnh ngắt toàn bộ Relay tại xưởng qua mạng di động</p>
     </div>
 
-    <div class="gauge-container" style="max-width:440px; margin:0 auto 20px auto;">
+    <div class="gauge-container" style="max-width:440px; margin:0 auto 15px auto;">
         <div class="gauge-box">
             <div class="card-title">🎈 ÁP SUẤT THẤP</div>
             <svg class="gauge-svg">
@@ -56,7 +64,7 @@
                 <circle class="gauge-fill" id="gauge_l" cx="60" cy="60" r="50" stroke="#28a745"></circle>
             </svg>
             <div class="gauge-value" id="val_l" style="color:#28a745">0.0</div>
-            <div class="unit">Bar</div>
+            <div class="unit">PSI</div>
         </div>
         <div class="gauge-box">
             <div class="card-title">🔥 ÁP SUẤT CAO</div>
@@ -65,7 +73,7 @@
                 <circle class="gauge-fill" id="gauge_h" cx="60" cy="60" r="50" stroke="#dc3545"></circle>
             </svg>
             <div class="gauge-value" id="val_h" style="color:#dc3545">0.0</div>
-            <div class="unit">Bar</div>
+            <div class="unit">PSI</div>
         </div>
     </div>
 
@@ -87,14 +95,26 @@
             <button onclick="confirmCommand('thuhoi', 'Xác nhận: CHẠY TIẾN TRÌNH THU HỒI GAS?')" class="action-btn" style="background:#ffc107; color:black;">🔄 THU HỒI</button>
             <button onclick="confirmVacuum()" class="action-btn" style="background:#17a2b8;">💨 CHÂN KHÔNG</button>
         </div>
+        
+        <div class="mb-3">
+            <button onclick="confirmCommand('vesinh', 'Xác nhận: CHẠY TIẾN TRÌNH VỆ SINH TUẦN HOÀN TỰ ĐỘNG?')" class="action-btn" style="background:#6f42c1; width:100%;">🧼 VỆ SINH MÁY TỰ ĐỘNG (5 PHÚT)</button>
+        </div>
+
         <div style="display: flex; gap: 10px;">
-            <input type="number" id="inputGas" class="input-field" placeholder="Nhập số Gram/Phút...">
+            <input type="number" id="inputGas" class="input-field" placeholder="Nhập số...">
             <button onclick="confirmNapGas()" class="action-btn" style="background:#28a745; min-width:130px;">▶ NẠP GAS</button>
         </div>
     </div>
 
+    <div class="card">
+        <div class="card-title">📚 TRA CỨU NHANH DATA LƯỢNG GAS XE</div>
+        <input type="text" id="searchCarInput" class="search-box" placeholder="🔍 Gõ tên hãng hoặc model xe để tìm..." onkeyup="filterCars()">
+        <div class="car-list-container" id="carListContainer">
+            <div style="text-align:center; padding:20px; color:#999;">Đang tải danh sách xe từ máy...</div>
+        </div>
+    </div>
+
 <script>
-    // 🔑 Kết nối tài khoản Cloud Firebase mới của anh Thành
     const firebaseConfig = {
         apiKey: "AIzaSyA0eOTv_Ydd9KvitnkBEK_EFQDJ-wr0nww",
         databaseURL: "https://ac-recover-xuanthanh-20b44-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -102,13 +122,15 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Hàm gửi gói lệnh lên mây điều khiển 4G
+    let localCarData = []; // Biến tạm lưu trữ danh sách xe để tìm kiếm
+
+    // Hàm gửi gói lệnh mây điều khiển
     function sendCloudCommand(actionName, valueInt) {
         database.ref('/control').set({
             action: actionName,
             value: parseInt(valueInt)
         }).then(() => {
-            if(actionName !== 'stop') alert("Đã bắn lệnh thành công lên vệ tinh 4G!");
+            if(actionName !== 'stop') alert("Đã phát lệnh điều khiển qua Cloud 4G!");
         });
     }
 
@@ -122,10 +144,69 @@
     function confirmNapGas() {
         let g = document.getElementById('inputGas').value;
         if(g > 0) { if(confirm("Xác nhận: LỆNH NẠP " + g + " GRAM VÀO XE?")) sendCloudCommand('napgas', g); }
-        else alert("Vui lòng gõ số Gram cần nạp trước!");
+        else alert("Vui lòng nhập khối lượng Gram trước!");
     }
 
-    // 🚀 LẮNG NGHE DỮ LIỆU ĐẨY VỀ TỪ XƯỞNG QUA MẠNG 4G
+    // Hàm điền số gram tự động khi chọn xe từ danh sách
+    function selectCarGas(grams) {
+        document.getElementById('inputGas').value = grams;
+        alert("Đã lấy cấu hình: " + grams + "g. Nhấn nút 'NẠP GAS' để bắt đầu.");
+    }
+
+    // Tải danh sách xe từ file gas_data.csv nội bộ của chip
+    function loadCarDatabase() {
+        fetch('/gas_data.csv')
+        .then(response => response.text())
+        .then(data => {
+            if(data.length < 10) {
+                document.getElementById('carListContainer').innerHTML = "<div class='text-center p-2 text-danger'>Không tìm thấy file dữ liệu trên chip!</div>";
+                return;
+            }
+            const rows = data.split('\n');
+            let html = "";
+            localCarData = [];
+            
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].trim() !== '') {
+                    const cols = rows[i].split(',');
+                    if(cols.length >= 4) {
+                        let minGas = cols[3].split('-')[0].trim();
+                        localCarData.push({ hang: cols[0], model: cols[1], loai: cols[2], grams: minGas });
+                    }
+                }
+            }
+            renderCarList(localCarData);
+        })
+        .catch(err => {
+            document.getElementById('carListContainer').innerHTML = "<div class='text-center p-2 text-muted'>Chạy chế độ giám sát qua mạng Cloud</div>";
+        });
+    }
+
+    function renderCarList(arr) {
+        let html = "";
+        if(arr.length === 0) {
+            html = "<div class='text-center p-3 text-muted'>Không tìm thấy xe phù hợp!</div>";
+        } else {
+            arr.forEach(car => {
+                html += `<div class="car-item" onclick="selectCarGas(${car.grams})">
+                            <div><b>${car.hang}</b> - ${car.model} (${car.loai})</div>
+                            <div class="gas-badge">${car.grams}g</div>
+                         </div>`;
+            });
+        }
+        document.getElementById('carListContainer').innerHTML = html;
+    }
+
+    // Hàm tìm kiếm xe thông minh
+    function filterCars() {
+        let txt = document.getElementById('searchCarInput').value.toLowerCase();
+        let filtered = localCarData.filter(car => 
+            car.hang.toLowerCase().includes(txt) || car.model.toLowerCase().includes(txt)
+        );
+        renderCarList(filtered);
+    }
+
+    // 🚀 LẮNG NGHE ĐỒNG BỘ DỮ LIỆU MÁY QUA 4G
     database.ref('/monitor').on('value', (snapshot) => {
         const data = snapshot.val();
         if(data) {
@@ -143,17 +224,18 @@
                 sttBox.style.backgroundColor = "#fd7e14";
             }
 
-            // Đồng bộ góc quay kim đồng hồ áp thấp (Căn tỷ lệ tối đa 15 Bar)
-            let offset_l = 314 - ((Number(data.ap_thap) / 15) * 314);
+            let offset_l = 314 - (((data.ap_thap + 30) / 230) * 314); // Chuẩn dải đo đồng bộ (-30 đến 200 PSI)
             if(offset_l < 0) offset_l = 0; if(offset_l > 314) offset_l = 314;
             document.getElementById('gauge_l').style.strokeDashoffset = offset_l;
 
-            // Đồng bộ góc quay kim đồng hồ áp cao (Căn tỷ lệ tối đa 50 Bar)
-            let offset_h = 314 - ((Number(data.ap_cao) / 50) * 314);
+            let offset_h = 314 - ((data.ap_cao / 500) * 314); // Căn tỷ lệ tối đa (500 PSI)
             if(offset_h < 0) offset_h = 0; if(offset_h > 314) offset_h = 314;
             document.getElementById('gauge_h').style.strokeDashoffset = offset_h;
         }
     });
+
+    // Tự động nạp dữ liệu xe khi mở trang Web lên
+    window.onload = loadCarDatabase;
 </script>
 </body>
 </html>
