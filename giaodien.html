@@ -34,10 +34,10 @@
         .action-btn { padding: 14px; font-weight: bold; font-size: 14px; border-radius: 8px; border: none; cursor: pointer; color: white; text-transform: uppercase; }
         .input-field { padding: 12px; font-size: 16px; width: 100%; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; text-align: center; }
         
-        /* Cải tiến danh sách xe hiển thị luôn */
+        /* Danh sách xe tải trực tiếp từ link file */
         .search-box { padding: 10px; font-size: 15px; border-radius: 8px; border: 1px solid #ddd; width: 100%; margin-bottom: 12px; text-align: center; }
         .car-list-container { max-height: 280px; overflow-y: auto; text-align: left; border: 1px solid #eee; border-radius: 8px; padding: 5px; background: #fafafa; }
-        .car-item { padding: 12px; border-bottom: 1px solid #eaeaea; cursor: pointer; font-size: 14px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .car-item { padding: 12px; border-bottom: 1px solid #eaeaea; cursor: pointer; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
         .car-item:hover { background-color: #e7f1ff; }
         .car-item b { color: #0056b3; font-size: 15px; }
         .gas-badge { background: #e2f0d9; color: #385723; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 13px; border: 1px solid #c5e0b4; }
@@ -48,7 +48,7 @@
     <div class="main-title">⚙️ HỆ THỐNG ĐIỀU KHIỂN</div>
     <div class="sub-title">& GIÁM SÁT XUÂN THÀNH V3</div>
     
-    <div class="status-badge" id="trang_thai">ĐANG ĐỒNG BỘ CLOUD...</div>
+    <div class="status-badge" id="trang_thai">ĐANG ĐỒNG BỘ CLUMB...</div>
 
     <div class="card">
         <div class="card-title">🎮 BÀN ĐIỀU KHIỂN TRỰC TUYẾN 4G</div>
@@ -110,7 +110,7 @@
         <div class="card-title">📚 DANH SÁCH LƯỢNG GAS CÁC DÒNG XE</div>
         <input type="text" id="searchCarInput" class="search-box" placeholder="🔍 Gõ từ khóa để tìm nhanh..." onkeyup="filterCars()">
         <div class="car-list-container" id="carListContainer">
-            <div style="text-align:center; padding:20px; color:#999;">Đang kết nối Cloud tải danh sách...</div>
+            <div style="text-align:center; padding:20px; color:#999;">Đang tải danh sách xe từ liên kết...</div>
         </div>
     </div>
 
@@ -134,12 +134,10 @@
     }
 
     function confirmCommand(act, msg) { if(confirm(msg)) sendCloudCommand(act, 0); }
-    
     function confirmVacuum() {
         let m = document.getElementById('inputGas').value; if(!m || m <= 0) m = 15;
         if(confirm("Xác nhận: BẬT BƠM HÚT CHÂN KHÔNG " + m + " PHÚT?")) sendCloudCommand('hutchankhong', m);
     }
-    
     function confirmNapGas() {
         let g = document.getElementById('inputGas').value;
         if(g > 0) { if(confirm("Xác nhận: LỆNH NẠP " + g + " GRAM VÀO XE?")) sendCloudCommand('napgas', g); }
@@ -148,25 +146,30 @@
 
     function selectCarGas(grams) {
         document.getElementById('inputGas').value = grams;
-        alert("Đã chọn cấu hình lượng Gas: " + grams + "g.");
+        alert("Đã cấu hình lượng Gas: " + grams + "g.");
     }
 
-    // 🚀 THAY ĐỔI LỚN: Lắng nghe danh sách xe đổ thẳng từ Firebase Cloud về điện thoại
-    database.ref('/car_database').on('value', (snapshot) => {
-        const data = snapshot.val();
-        localCarData = [];
-        if(data) {
-            // Định dạng dữ liệu Firebase lưu dạng object hoặc array
-            for(let key in data) {
-                if(data[key].hang) {
-                    localCarData.push(data[key]);
+    // 🔥 ĐỌC FILE TRỰC TIẾP TỪ KHO GITHUB (Rất nhẹ chip)
+    function loadCarDataFromLink() {
+        fetch('gas_data.csv') // Đọc file gas_data.csv nằm cùng thư mục web trên GitHub
+        .then(response => response.text())
+        .then(data => {
+            const rows = data.split('\n');
+            localCarData = [];
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].trim() !== '') {
+                    const cols = rows[i].split(',');
+                    if(cols.length >= 4) {
+                        let minGas = cols[3].split('-')[0].trim();
+                        localCarData.push({ hang: cols[0], model: cols[1], loai: cols[2], grams: parseInt(minGas) });
+                    }
                 }
             }
             renderCarList(localCarData);
-        } else {
-            document.getElementById('carListContainer').innerHTML = "<div class='text-center p-3 text-muted'>Chưa có dữ liệu xe trên Cloud. Hãy tải file CSV lên từ IP nội bộ!</div>";
-        }
-    });
+        }).catch(err => {
+            document.getElementById('carListContainer').innerHTML = "<div class='text-center p-3 text-danger'>Lỗi không tải được tệp dữ liệu xe từ Link!</div>";
+        });
+    }
 
     function renderCarList(arr) {
         let html = "";
@@ -191,7 +194,7 @@
         renderCarList(filtered);
     }
 
-    // ĐỒNG BỘ DỮ LIỆU ĐO LƯỜNG TỪ XƯỞNG
+    // ĐỒNG BỘ MONITOR 4G
     database.ref('/monitor').on('value', (snapshot) => {
         const data = snapshot.val();
         if(data) {
@@ -203,11 +206,8 @@
             
             let sttBox = document.getElementById('trang_thai');
             sttBox.innerText = data.trang_thai;
-            if(data.trang_thai === "READY") {
-                sttBox.style.backgroundColor = "#008744";
-            } else {
-                sttBox.style.backgroundColor = "#fd7e14";
-            }
+            if(data.trang_thai === "READY") sttBox.style.backgroundColor = "#008744";
+            else sttBox.style.backgroundColor = "#fd7e14";
 
             let offset_l = 314 - (((data.ap_thap + 30) / 230) * 314); 
             if(offset_l < 0) offset_l = 0; if(offset_l > 314) offset_l = 314;
@@ -218,6 +218,8 @@
             document.getElementById('gauge_h').style.strokeDashoffset = offset_h;
         }
     });
+
+    window.onload = loadCarDataFromLink;
 </script>
 </body>
 </html>
